@@ -5,8 +5,8 @@ export const commit = (
 	name = "ChangeBot",
 	email = "github-actions[bot]@users.noreply.github.com",
 ) => {
-	exec(`git config --global user.email "${email}"`);
-	exec(`git config --global user.name "${name}"`);
+	exec(`git config user.email "${email}"`);
+	exec(`git config user.name "${name}"`);
 	exec(`git add .`);
 	exec(`git commit -m "${message.replace(/\"/g, "''")}"`);
 };
