@@ -20,18 +20,5 @@ export const config: Config = {
 			enabled: true,
 			priority: "high",
 		},
-		{
-			name: "Product Page",
-			url: "https://store.example.com/product/123",
-			selector: ".product-info", // CSS selector
-			enabled: true,
-			priority: "default",
-		},
-		{
-			name: "Reddit",
-			url: "https://reddit.com",
-			enabled: true,
-			priority: "default",
-		},
 	],
 };
