@@ -13,75 +13,129 @@ import { commit, push } from "./git";
 export async function main(): Promise<void> {
 	console.log("🔍 Starting website change detection...");
 
-	console.log(
-		`📋 Monitoring ${config.websites.filter((w) => w.enabled).length} website(s)`,
-	);
+	// Cache enabled websites to avoid multiple filter calls
+	const enabledWebsites = config.websites.filter((w) => w.enabled);
+	console.log(`📋 Monitoring ${enabledWebsites.length} website(s)`);
 
 	const results: ChangeResult[] = [];
-	const updatedSnapshots: string[] = [];
 
-	// Monitor each website
-	for (const website of config.websites.filter((w) => w.enabled)) {
+	// Monitor websites in parallel
+	const monitoringPromises = enabledWebsites.map(async (website) => {
 		console.log(`\n📡 Checking: ${website.name}`);
 
 		try {
 			const result = await monitorWebsite(website);
-
-			if (result.changed || result.isFirstRun) {
-				results.push(result);
-				updatedSnapshots.push(website.url);
-			} else {
-				// Still add result for tracking, even if snapshot wasn't updated
-				results.push(result);
-			}
+			return { success: true, result, website };
 		} catch (error) {
 			console.error(`❌ Failed to monitor ${website.name}:`);
 
 			const errorMessage =
 				error instanceof Error ? error.message : String(error);
 
-			// Track error in snapshot
 			const existingSnapshot = loadSnapshot(website.url);
+			let snapshot: Snapshot;
+
 			if (existingSnapshot) {
-				const snapshot: Snapshot = {
+				snapshot = {
 					...existingSnapshot,
 					error_count: existingSnapshot.error_count + 1,
 				};
-				saveSnapshot(snapshot);
-				updatedSnapshots.push(website.url);
+			} else {
+				snapshot = {
+					url: website.url,
+					name: website.name,
+					current: {
+						timestamp: formatTimestamp(),
+						content: "",
+						hash: "",
+						status: 0,
+					},
+					last_check: formatTimestamp(),
+					change_count: 0,
+					error_count: 1,
+					enabled: website.enabled,
+					selector: website.selector ?? null,
+				};
 			}
 
+			saveSnapshot(snapshot);
+
 			// Add error result for summary
-			results.push({
+			const errorResult: ChangeResult = {
 				url: website.url,
 				name: website.name,
 				changed: false,
 				isFirstRun: false,
 				error: errorMessage,
-			});
+			};
 
-			// Send error notification
-			await sendErrorNotification(
-				website,
-				error instanceof Error ? error : new Error(errorMessage),
-			);
+			// Send error notification with throttling (catch errors to prevent one failure from stopping others)
+			const currentSnapshot = snapshot;
+
+			try {
+				const updatedSnapshot = await sendErrorNotification(
+					website,
+					error instanceof Error ? error : new Error(errorMessage),
+					currentSnapshot,
+				);
+
+				// Save updated snapshot if notification was sent (contains updated last_error_notification_time)
+				if (updatedSnapshot) {
+					saveSnapshot(updatedSnapshot);
+				}
+			} catch (notificationError) {
+				console.error(
+					`Failed to send error notification for ${website.name}:`,
+					notificationError,
+				);
+			}
+
+			return { success: false, result: errorResult, website };
+		}
+	});
+
+	// Wait for all monitoring tasks to complete
+	const monitoringResults = await Promise.allSettled(monitoringPromises);
+
+	// Process results
+	for (const result of monitoringResults) {
+		if (result.status === "fulfilled") {
+			results.push(result.value.result);
+		} else {
+			// Handle unexpected promise rejection
+			console.error("Unexpected error in monitoring:", result.reason);
 		}
 	}
 
+	// Commit and push if --update flag is set and there are changes
 	if (process.argv.includes("--update")) {
-		commit("chore: update snapshots [skip ci]");
-		push();
+		try {
+			const changedWebsites = results
+				.filter((r) => r.changed || r.isFirstRun)
+				.map((r) => r.name);
+
+			if (changedWebsites.length > 0) {
+				const commitMessage =
+					changedWebsites.length === 1
+						? `chore: update snapshot for ${changedWebsites[0]} [skip ci]`
+						: `chore: update snapshots for ${changedWebsites.length} website(s) [skip ci]`;
+
+				await commit(commitMessage);
+				await push();
+			} else {
+				console.log("No changes to commit");
+			}
+		} catch (error) {
+			console.error("Failed to commit/push changes:", error);
+			// Don't exit with error code - allow summary to be shown
+		}
 	}
 
 	console.log(`\n📊 Summary:`);
-	console.log(
-		`  - Websites checked: ${config.websites.filter((w) => w.enabled).length}`,
-	);
+	console.log(`  - Websites checked: ${enabledWebsites.length}`);
 	console.log(`  - Changed: ${results.filter((r) => r.changed).length}`);
 	console.log(`  - Initial: ${results.filter((r) => r.isFirstRun).length}`);
 	console.log(`  - Errors: ${results.filter((r) => r.error).length}`);
-
-	process.exit(0);
 }
 
 /**
@@ -129,8 +183,21 @@ async function monitorWebsite(website: Website): Promise<ChangeResult> {
 			selector: website.selector ?? null,
 		});
 
-		// Send notification
-		await sendChangeNotification(result, website);
+		// Send notification if enabled (catch errors to prevent notification failure from breaking monitoring)
+		const shouldNotify =
+			(result.isFirstRun && website.notifyOnFirstRun !== false) ||
+			result.changed;
+
+		if (shouldNotify) {
+			try {
+				await sendChangeNotification(result, website);
+			} catch (error) {
+				console.error(
+					`Failed to send change notification for ${website.name}:`,
+					error,
+				);
+			}
+		}
 	}
 
 	return result;
@@ -138,8 +205,13 @@ async function monitorWebsite(website: Website): Promise<ChangeResult> {
 
 // Run if executed directly
 if (import.meta.main) {
-	main().catch((error) => {
-		console.error("Fatal error:", error);
-		process.exit(1);
-	});
+	main()
+		.then(() => {
+			// Exit successfully
+			process.exit(0);
+		})
+		.catch((error) => {
+			console.error("Fatal error:", error);
+			process.exit(1);
+		});
 }

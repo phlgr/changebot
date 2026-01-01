@@ -2,6 +2,11 @@ import { DOMParser } from "@xmldom/xmldom";
 import * as cheerio from "cheerio";
 import * as xpath from "xpath";
 import type { FetchResult, Website } from "./types.js";
+import { config } from "./config.js";
+
+// Constants for retry logic
+const INITIAL_RETRY_DELAY_MS = 1000; // Initial delay before first retry
+const MAX_RETRY_DELAY_MS = 10000; // Maximum delay between retries
 
 /**
  * Fetch website content with retries
@@ -33,6 +38,14 @@ export async function fetchWithRetry(
 
 			let content = await response.text();
 
+			// Check content size
+			const contentSize = new TextEncoder().encode(content).length;
+			if (contentSize > config.settings.large_content_threshold) {
+				console.warn(
+					`⚠️  Large content detected for ${url}: ${(contentSize / 1024 / 1024).toFixed(2)}MB (threshold: ${(config.settings.large_content_threshold / 1024 / 1024).toFixed(2)}MB). Consider using a selector to monitor a specific section.`,
+				);
+			}
+
 			// Apply selector if provided
 			if (selector?.startsWith("xpath=")) {
 				content = applyXPathSelector(content, selector.replace("xpath=", ""));
@@ -51,7 +64,10 @@ export async function fetchWithRetry(
 			}
 
 			// Exponential backoff
-			const delay = Math.min(1000 * 2 ** (attempt - 1), 10000);
+			const delay = Math.min(
+				INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1),
+				MAX_RETRY_DELAY_MS,
+			);
 			await new Promise((resolve) => setTimeout(resolve, delay));
 
 			console.log(`Retry ${attempt}/${retries} for ${url} after ${delay}ms`);
@@ -91,8 +107,16 @@ function applyXPathSelector(html: string, xpathExpr: string): string {
 		const result = xpath.select(xpathExpr, doc);
 
 		if (Array.isArray(result) && result.length > 0) {
-			const node = result[0] as any;
-			return node.textContent || node.toString() || "";
+			const node = result[0];
+			if (node && typeof node === "object") {
+				// Handle DOM nodes with textContent
+				if ("textContent" in node && typeof node.textContent === "string") {
+					return node.textContent;
+				}
+				// Fallback to toString
+				return String(node);
+			}
+			return "";
 		}
 
 		console.warn(`XPath selector "${xpathExpr}" found no elements`);

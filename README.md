@@ -51,9 +51,8 @@ import type { Config } from './types.js';
 
 export const config: Config = {
   ntfy: {
-    priority: 'default', // default | urgent | high | low | min
-    server: 'https://ntfy.sh', // optional, for self-hosted
-    tags: 'changedetection'
+    topic: process.env.NTFY_TOPIC ?? '',
+    server: process.env.NTFY_SERVER ?? 'https://ntfy.sh',
   },
   settings: {
     timeout: 30000, // Request timeout in ms
@@ -66,7 +65,8 @@ export const config: Config = {
       url: 'https://example.com',
       selector: null, // CSS/XPath selector or null
       enabled: true,
-      priority: 'high'
+      priority: 'high',
+      notifyOnFirstRun: true, // Optional: send notification on initial snapshot
     }
   ]
 };
@@ -134,22 +134,19 @@ Or use GitHub UI:
 mise exec -- bun install
 
 # Run monitoring
-mise exec -- bun run src/monitor.ts
+bun run src/monitor.ts
+
+# Run monitoring with git commit/push
+bun run monitor
 
 # Type checking
-mise exec -- bun run typecheck
+bun run lint:types
 
 # Lint code
-mise exec -- bun run lint
+bun run lint
 
 # Auto-fix linting issues
-mise exec -- bun run lint:fix
-
-# Format code
-mise exec -- bun run format
-
-# Run all checks
-mise exec -- bun run check
+bun run lint:fix
 ```
 
 ## License

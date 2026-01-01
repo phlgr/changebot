@@ -1,5 +1,6 @@
 import { diffLines } from "diff";
 import type { ChangeResult, SnapshotEntry } from "./types.js";
+import { TRUNCATION_LIMITS, truncateText } from "./utils.js";
 
 /**
  * Compare content and generate change result
@@ -46,7 +47,10 @@ export function compareContent(
 }
 
 /**
- * Generate human-readable diff
+ * Generate human-readable diff between old and new content
+ * @param oldContent - The previous content
+ * @param newContent - The new content
+ * @returns A formatted diff string with context lines and summary
  */
 function generateDiff(oldContent: string, newContent: string): string {
 	const changes = diffLines(oldContent, newContent, {
@@ -55,59 +59,28 @@ function generateDiff(oldContent: string, newContent: string): string {
 	});
 
 	const lines: string[] = [];
-	let additions = 0;
-	let deletions = 0;
-	const contextLines = 2; // Number of unchanged lines to show around changes
-	let lastUnchangedLines: string[] = [];
 
+	// Only include actual changes (additions and deletions), no context lines
 	for (const change of changes) {
 		if (change.added) {
-			// Add context before addition if available
-			if (lastUnchangedLines.length > 0) {
-				for (const ctx of lastUnchangedLines.slice(-contextLines)) {
-					lines.push(`  ${ctx.trimEnd()}`);
-				}
-				lastUnchangedLines = [];
-			}
 			const changeLines = change.value.split("\n").filter((l) => l !== "");
 			for (const line of changeLines) {
 				lines.push(`+ ${line.trimEnd()}`);
-				additions++;
 			}
 		} else if (change.removed) {
-			// Add context before deletion if available
-			if (lastUnchangedLines.length > 0) {
-				for (const ctx of lastUnchangedLines.slice(-contextLines)) {
-					lines.push(`  ${ctx.trimEnd()}`);
-				}
-				lastUnchangedLines = [];
-			}
 			const changeLines = change.value.split("\n").filter((l) => l !== "");
 			for (const line of changeLines) {
 				lines.push(`- ${line.trimEnd()}`);
-				deletions++;
-			}
-		} else {
-			// Store unchanged lines for context (keep only recent ones)
-			const unchangedLines = change.value.split("\n").filter((l) => l !== "");
-			lastUnchangedLines.push(...unchangedLines);
-			// Keep only the last few unchanged lines for context
-			if (lastUnchangedLines.length > contextLines * 2) {
-				lastUnchangedLines = lastUnchangedLines.slice(-contextLines * 2);
 			}
 		}
+		// Skip unchanged lines - only show actual diffs
 	}
 
-	// Limit diff size for notifications
-	const maxLines = 50;
-	let diffOutput = lines.slice(0, maxLines).join("\n");
-
-	if (lines.length > maxLines) {
-		diffOutput += `\n... and ${lines.length - maxLines} more lines`;
-	}
-
-	// Add summary
-	diffOutput = `Changes summary: ${additions} additions, ${deletions} deletions\n\n${diffOutput}`;
-
-	return diffOutput;
+	// Use centralized truncation utility
+	const diffText = lines.join("\n");
+	return truncateText(diffText, {
+		maxLength: TRUNCATION_LIMITS.MAX_LINE_LENGTH,
+		maxLines: TRUNCATION_LIMITS.MAX_DIFF_LINES,
+		maxTotalSize: TRUNCATION_LIMITS.MAX_DIFF_SIZE,
+	});
 }

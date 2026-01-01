@@ -13,6 +13,8 @@ export type GlobalSettings = {
 	timeout: number;
 	retries: number;
 	large_content_threshold: number;
+	error_notification_threshold: number; // Only notify after this many consecutive errors
+	error_notification_cooldown_ms: number; // Cooldown between error notifications
 };
 
 export type Website = {
@@ -22,6 +24,7 @@ export type Website = {
 	enabled: boolean;
 	priority: "default" | "urgent" | "high" | "low" | "min";
 	tags?: string[];
+	notifyOnFirstRun?: boolean; // Whether to send notification on initial snapshot (default: true)
 };
 
 export type Snapshot = {
@@ -34,6 +37,7 @@ export type Snapshot = {
 	error_count: number;
 	enabled: boolean;
 	selector?: string | null;
+	last_error_notification_time?: number; // Timestamp of last error notification (for throttling)
 };
 
 export type SnapshotEntry = {
