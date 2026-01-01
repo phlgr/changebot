@@ -1,4 +1,4 @@
-# Website Change Detection
+# ChangeBot
 
 Monitor websites for changes and get notified via ntfy.sh. Powered by GitHub Actions and Bun.
 
@@ -56,7 +56,6 @@ export const config: Config = {
     tags: 'changedetection'
   },
   settings: {
-    check_interval: '*/5 * * * *',
     timeout: 30000, // Request timeout in ms
     retries: 3, // Retry failed fetches
     large_content_threshold: 1048576 // 1MB warning threshold
