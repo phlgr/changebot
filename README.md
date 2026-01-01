@@ -133,7 +133,7 @@ Or use GitHub UI:
 
 ```bash
 # Install dependencies
-mise exec -- bun install
+bun install
 
 # Run monitoring
 bun run src/monitor.ts
