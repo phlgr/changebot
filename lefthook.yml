@@ -8,3 +8,6 @@ pre-commit:
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,md,mdx,yml,yaml,css,scss,html}"
       run: bun run lint:fix -- --colors=off {staged_files}
       stage_fixed: true
+    unused:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: bun run knip
