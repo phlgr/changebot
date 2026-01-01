@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  commands:
+    types:
+      glob: "*.{ts}"
+      run: bun run lint:types
+    lint:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,md,mdx,yml,yaml,css,scss,html}"
+      run: bun run lint:fix -- --colors=off {staged_files}
+      stage_fixed: true

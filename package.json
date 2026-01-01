@@ -1,0 +1,28 @@
+{
+	"name": "website-change-detection",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"monitor": "bun run src/monitor.ts",
+		"dev": "bun run src/monitor.ts",
+		"typecheck": "tsc --noEmit",
+		"lint": "bun run lint:types && bun run lint:fix",
+		"lint:fix": "biome check --write .",
+		"lint:types": "tsgo"
+	},
+	"dependencies": {
+		"@typescript/native-preview": "^7.0.0-dev.20260101.1",
+		"cheerio": "^1.0.0-rc.12",
+		"diff": "^5.2.0",
+		"lefthook": "^2.0.13",
+		"xpath": "^0.0.32",
+		"yaml": "^2.4.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.10",
+		"@types/bun": "^1.1.0",
+		"@types/diff": "^5.2.0",
+		"@types/node": "^20.11.0",
+		"typescript": "^5.3.0"
+	}
+}
