@@ -15,23 +15,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
         with:
+          ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Check endpoint status
+        uses: phlgr/changebot-monitor@v1.0.0
         with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run monitoring
+          command: "update"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ secrets.NTFY_SERVER || 'https://ntfy.sh' }}
-        run: bun run src/monitor.ts --update
 
       - name: Summary
         run: |
