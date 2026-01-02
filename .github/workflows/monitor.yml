@@ -23,10 +23,7 @@ jobs:
         uses: phlgr/changebot-monitor@main
         with:
           command: "update"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          NTFY_SERVER: ${{ secrets.NTFY_SERVER || 'https://ntfy.sh' }}
+          ntfy_topic: ${{ secrets.NTFY_TOPIC }}
 
       - name: Summary
         run: |
