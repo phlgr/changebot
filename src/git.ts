@@ -5,10 +5,10 @@ export const commit = (
 	name = "ChangeBot",
 	email = "github-actions[bot]@users.noreply.github.com",
 ) => {
-	exec(`git add .`);
-	exec(
-		`git commit --author "${name} <${email}>" -m "${message.replace(/\"/g, "''")}"`,
-	);
+	exec(`git config user.email "${email}"`);
+	exec(`git config user.name "${name}"`);
+	exec(`git add ./snapshots`);
+	exec(`git commit -m "${message.replace(/\"/g, "''")}"`);
 };
 
 export const push = () => {
