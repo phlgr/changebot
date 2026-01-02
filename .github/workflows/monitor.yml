@@ -23,7 +23,7 @@ jobs:
         uses: phlgr/changebot-monitor@main
         with:
           command: "update"
-          ntfy_topic: ${{ secrets.NTFY_TOPIC }}
+          ntfy_topic: ${{ vars.NTFY_TOPIC }}
 
       - name: Summary
         run: |
