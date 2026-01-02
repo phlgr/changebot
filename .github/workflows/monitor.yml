@@ -5,9 +5,6 @@ on:
     - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
-    paths:
-      - "src/config.ts"
-      - "src/**"
 
 permissions:
   contents: write
@@ -33,7 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
+          NTFY_SERVER: ${{ secrets.NTFY_SERVER || 'https://ntfy.sh' }}
         run: bun run src/monitor.ts --update
 
       - name: Summary
