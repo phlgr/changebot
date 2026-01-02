@@ -1,6 +1,6 @@
 ntfy:
-  topic: ${process.env.NTFY_TOPIC-changebot}
-  server: ${process.env.NTFY_SERVER-https://ntfy.sh} # ntfy.sh server URL can be changed for self-hosted servers
+  topic: ${NTFY_TOPIC:-changebot}
+  server: ${NTFY_SERVER:-https://ntfy.sh} # ntfy.sh server URL can be changed for self-hosted servers
 
 settings:
   timeout: 30000 # Request timeout in ms
