@@ -16,3 +16,9 @@ websites:
     enabled: true
     priority: high
 
+  - name: Example Website with selector
+    url: https://example.com
+    selector: "h1:contains('Example')" # CSS/XPath selector (null = full page)
+    enabled: true
+    priority: high
+

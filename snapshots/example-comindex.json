@@ -1,15 +1,21 @@
 {
   "url": "https://example.com",
-  "name": "Example Website",
+  "name": "Example Website with selector",
   "current": {
+    "timestamp": "2026-01-03T13:36:32.065Z",
+    "content": "Example Domain",
+    "status": 200,
+    "hash": "162b81548a8db0ab220f7137405fb003019c266883d4181869662ad7eafdbc4d"
+  },
+  "previous": {
     "timestamp": "2026-01-02T23:00:02.322Z",
     "content": "<!doctype html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.<p><a href=\"https://iana.org/domains/example\">Learn more</a></div></body></html>\n",
     "status": 200,
     "hash": "6f5635035f36ad500b4fc4bb7816bb72ef5594e1bcae44fa074c5e988fc4c0fe"
   },
-  "last_check": "2026-01-02T23:00:02.322Z",
-  "change_count": 0,
+  "last_check": "2026-01-03T13:36:32.066Z",
+  "change_count": 1,
   "error_count": 0,
   "enabled": true,
-  "selector": null
+  "selector": "h1:contains('Example')"
 }
