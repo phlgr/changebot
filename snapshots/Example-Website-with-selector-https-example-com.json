@@ -1,0 +1,15 @@
+{
+  "url": "https://example.com",
+  "name": "Example Website with selector",
+  "current": {
+    "timestamp": "2026-01-03T13:44:26.431Z",
+    "content": "Example Domain",
+    "status": 200,
+    "hash": "162b81548a8db0ab220f7137405fb003019c266883d4181869662ad7eafdbc4d"
+  },
+  "last_check": "2026-01-03T13:44:26.431Z",
+  "change_count": 0,
+  "error_count": 0,
+  "enabled": true,
+  "selector": "h1:contains('Example')"
+}
