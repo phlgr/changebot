@@ -5,8 +5,7 @@
 		"config:best-practices",
 		"group:monorepos",
 		"group:recommended",
-		":automergeMinor",
-		"schedule:officeHours"
+		":automergeMinor"
 	],
 	"assignees": ["phlgr"],
 	"postUpdateOptions": ["npmInstallTwice"],
