@@ -1,0 +1,19 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"timezone": "Europe/Berlin",
+	"extends": [
+		"config:best-practices",
+		"group:monorepos",
+		"group:recommended",
+		":automergeMinor",
+		"schedule:officeHours"
+	],
+	"assignees": ["phlgr"],
+	"postUpdateOptions": ["npmInstallTwice"],
+	"packageRules": [
+		{
+			"matchDepTypes": ["devDependencies"],
+			"automerge": true
+		}
+	]
+}
