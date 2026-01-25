@@ -15,15 +15,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Check endpoint status
         uses: phlgr/changebot-monitor@main
         with:
           command: "update"
-          ntfy_topic: ${{ vars.NTFY_TOPIC }}
+        env:
+          # Pass GitHub secrets/variables as environment variables
+          # These are interpolated into .changebotrc.yml via ${VAR_NAME} syntax
+          #
+          # Set these in your repo's Settings > Secrets and variables > Actions:
+          # - Variables (vars.*): for non-sensitive values like NTFY_TOPIC
+          # - Secrets (secrets.*): for sensitive values like webhook URLs with tokens
+          NTFY_TOPIC: ${{ vars.NTFY_TOPIC }}
 
       - name: Summary
         run: |
