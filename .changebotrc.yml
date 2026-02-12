@@ -1,6 +1,28 @@
-ntfy:
-  topic: ${NTFY_TOPIC:-changebot}
-  server: ${NTFY_SERVER:-https://ntfy.sh} # ntfy.sh server URL can be changed for self-hosted servers
+# Define notification channels
+channels:
+  # ntfy.sh channel example
+  ntfy:
+    type: ntfy
+    topic: ${NTFY_TOPIC:-changebot}
+    server: ${NTFY_SERVER:-https://ntfy.sh}
+
+  # Webhook channel examples (uncomment to use)
+  # slack:
+  #   type: webhook
+  #   url: ${SLACK_WEBHOOK_URL}
+  #   method: POST
+  #   headers:
+  #     Content-Type: application/json
+  #   body: |
+  #     {"text": "{{title}}", "blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "{{message}}"}}]}
+
+  # discord:
+  #   type: webhook
+  #   url: ${DISCORD_WEBHOOK_URL}
+  #   headers:
+  #     Content-Type: application/json
+  #   body: |
+  #     {"content": "**{{title}}**\n{{message}}\n{{url}}"}
 
 settings:
   timeout: 30000 # Request timeout in ms
@@ -8,6 +30,7 @@ settings:
   large_content_threshold: 1048576 # 1MB warning threshold
   error_notification_threshold: 3 # Only notify after this many consecutive errors
   error_notification_cooldown_ms: 3600000 # 1 hour cooldown between error notifications
+  default_channel: ntfy # Default channel when website doesn't specify notifiers
 
 websites:
   - name: Example Website
@@ -15,6 +38,7 @@ websites:
     selector: null # CSS/XPath selector (null = full page)
     enabled: true
     priority: high
+    # Uses default_channel since no notifiers specified
 
   - name: Example Website with selector
     url: https://example.com
@@ -22,3 +46,46 @@ websites:
     enabled: true
     priority: high
 
+  # Example: Website with custom inline webhook notifier
+  # - name: Critical Service
+  #   url: https://critical.example.com
+  #   enabled: true
+  #   priority: urgent
+  #   notifiers:
+  #     - type: webhook
+  #       url: ${CUSTOM_WEBHOOK_URL}
+  #       method: POST
+  #       headers:
+  #         Content-Type: application/json
+  #         Authorization: Bearer ${AUTH_TOKEN}
+  #       body: |
+  #         {
+  #           "service": "{{name}}",
+  #           "alert": "{{title}}",
+  #           "details": "{{message}}",
+  #           "link": "{{url}}"
+  #         }
+
+  # Example: Website with multiple notifiers (named + inline)
+  # - name: Important Page
+  #   url: https://important.example.com
+  #   enabled: true
+  #   priority: high
+  #   notifiers:
+  #     - slack              # Reference named channel
+  #     - type: ntfy         # Inline ntfy with different topic
+  #       topic: important-alerts
+  #       server: https://ntfy.sh
+
+# Template variables available in webhook body:
+# {{title}}       - Notification title
+# {{message}}     - Full notification message
+# {{url}}         - Website URL being monitored
+# {{name}}        - Website name
+# {{priority}}    - Priority level (urgent, high, default, low, min)
+# {{priority_num}} - Priority as number (5, 4, 3, 2, 1)
+# {{tags}}        - Comma-separated tags
+# {{timestamp}}   - ISO timestamp
+# {{event}}       - Event type (change, error, initial)
+# {{hash}}        - Content hash (for changes)
+# {{diff}}        - Diff content (if available)
