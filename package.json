@@ -8,6 +8,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.2",
-		"knip": "6.23.0"
+		"knip": "6.24.0"
 	}
 }
