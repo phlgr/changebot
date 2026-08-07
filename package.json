@@ -7,7 +7,7 @@
 		"knip": "knip"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.6",
+		"@biomejs/biome": "2.5.7",
 		"knip": "6.31.0"
 	}
 }
