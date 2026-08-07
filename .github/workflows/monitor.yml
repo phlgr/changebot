@@ -20,7 +20,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check endpoint status
-        uses: phlgr/changebot-monitor@main
+        uses: phlgr/changebot-monitor@3d94f61560d84c4ca46b0dfcade79d9ebde28a7b # main
         with:
           command: "update"
         env:
