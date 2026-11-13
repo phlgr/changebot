@@ -13,6 +13,11 @@
 		{
 			"matchDepTypes": ["devDependencies"],
 			"automerge": true
+		},
+		{
+			"description": "Our own action: always track @main, never pin or bump",
+			"matchPackageNames": ["phlgr/changebot-monitor"],
+			"enabled": false
 		}
 	]
 }
